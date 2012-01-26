@@ -46,6 +46,11 @@ fi
 
 
 
+
+#### Test si la branche courante est une 'tracked branch'
+log "Liste des commits en attente de push"
+git log origin/master.. --format='%Cred%h%Creset;%C(yellow)%an%Creset;%H;%Cblue%f%Creset' | git name-rev --stdin --always --name-only | column -t -s';'
+
 #### Test si la branche courante est une 'tracked branch'
 log "Vérification de l'existence de la branche sur Github" 
 if [ 0 -eq `git ls-remote origin refs/heads/$CURRENT_BRANCH | grep -c "$CURRENT_BRANCH"` ]; then
