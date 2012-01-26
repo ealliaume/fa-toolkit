@@ -1,61 +1,56 @@
-#!/bin/bash
+#!/bin/sh
 # @author Christophe Amory
 # @author Xavier Bucchiotty
-# Local run
+# @author Cédric Pineau
+# Remote run
+
+SCRIPTS_DIRECTORY=`dirname $0`
+. $SCRIPTS_DIRECTORY/safe-commons
 
 CURRENT_WORKING_DIR="$(git rev-parse --show-toplevel)"
-PRIVATE_BUILD="${CURRENT_WORKING_DIR}/../clone/${CURRENT_WORKING_DIR##*/}"
-PRIVATE_BUILD_LOG="${PRIVATE_BUILD}_log"
-INIT_DIR=`pwd`
 CURRENT_BRANCH="$(git rev-parse --symbolic --abbrev-ref $(git symbolic-ref HEAD))"
 
+PRIVATE_BUILD="${CURRENT_WORKING_DIR}/../clone/${CURRENT_WORKING_DIR##*/}"
+PRIVATE_BUILD_LOG="${PRIVATE_BUILD}_log"
 SORTIE_LOG=$PRIVATE_BUILD_LOG/sortie.log
-VERBOSE=0
 
-if  [ $# -ge 1 ] && [ "--verbose" = $1 ]; then
-  SORTIE_LOG=/dev/stdout
-  VERBOSE=1
+if [ -z $PERSONAL_VM ]; then
+  logError "La variable \"PERSONAL_VM\" doit être positionnée pour indiquer la VM de remote-run/tests fonctionnels"
 fi
 
-if [ $# -ge 2 ] &&  [ "--verbose" = $2 ]; then
-  SORTIE_LOG=/dev/stdout
-  VERBOSE=1
+while true ; do
+  case "$1" in
+    -r|--remote)
+        REMOTE="yes"
+    shift ;;
+    -v|--verbose) 
+        SORTIE_LOG=/dev/stdout
+        VERBOSE="yes"
+    shift ;;
+    -d|--dry-run) 
+        GIT_DRY_RUN="-n"
+    shift ;;
+    "") break ;;
+    *)
+      echo "Paramètre invalide \"$1\""
+      echo "Utilisation : safe-push [-r|--remote] [-v|--verbose] [-d|--dry-run]"
+      exit 1 ;;
+  esac
+done
+
+
+if [ -z "$VERBOSE" ]; then
+  rm -rf $PRIVATE_BUILD_LOG/*.log
+  mkdir -p $PRIVATE_BUILD $PRIVATE_BUILD_LOG 
 fi
 
-
-##Fonction de log
-#@param 1 message à logger
-function log() {
-	echo "\033[0;32m* $1\033[0m"
-}
-
-##Fonction de gestion des messages d'erreur
-#@param 1 message d'erreur
-function errorHandler() {
-if [ $? -ne 0 ]; then
-      echo ; echo
-      if [ $VERBOSE -eq 0 ]; then
-	      tail -50 $SORTIE_LOG     
-      fi
-      echo "\033[1;31m>>>>ERROR : $1\033[0m" 
-      cd $INIT_DIR > /dev/null
-      exit
-fi
-}
-
-
-
-
-
-#### Test si la branche courante est une 'tracked branch'
 log "Liste des commits en attente de push"
 git log origin/master.. --format='%Cred%h%Creset;%C(yellow)%an%Creset;%H;%Cblue%f%Creset' | git name-rev --stdin --always --name-only | column -t -s';'
 
-#### Test si la branche courante est une 'tracked branch'
-log "Vérification de l'existence de la branche sur Github" 
+#### Teste si la branche courante est une 'tracked branch'
+log "Vérification de l'existence de la branche sur le repository \"origin\""
 if [ 0 -eq `git ls-remote origin refs/heads/$CURRENT_BRANCH | grep -c "$CURRENT_BRANCH"` ]; then
-log "Cette branche n'existe pas sur GitHub"
- exit
+  logError "Cette branche n'existe pas sur le repository \"origin\""
 fi
 
 ### Détermine le dépot distant
@@ -65,119 +60,71 @@ else
   REMOTE_REPO=`git remote -v | grep "(push)" | sed 's/origin//' | sed 's/(push)//'`
 fi
 
-### Créer le clone du dépot local s'il n'existe pas sinon nettoie le dossier de log
-if [ ! -d "$PRIVATE_BUILD" ]; then
-  log "Création du clone : $PRIVATE_BUILD"
-  git clone . "$PRIVATE_BUILD"
-  log "Création du répertoire de log: $PRIVATE_BUILD_LOG"
-  mkdir $PRIVATE_BUILD_LOG
-else
-  log "Nettoyage des fichiers de logs"
-  rm -rf $PRIVATE_BUILD_LOG/*.log
-fi
-
-log "Détection des stashs en cours..." 
-if [ 0 -ne `git status --porcelain | grep -c ' ' ` ]; then
-  log "Vous avez des modifications en cours, on fait un stash"
-  NEED_STASH="1"
+log "Détection des modifications (non commitées) en cours..." 
+if [ 0 -ne `git status --porcelain | grep -v '??' | wc -l` ]; then
+  log "Vous avez des modifications en cours (non commitées), création d'un stash"
+  HAS_STASH="yes"
   git stash > $SORTIE_LOG
 fi
 
-log "Mise à jours des sources"
+log "Mise à jour des sources"
 git pull --rebase > $SORTIE_LOG
-if [ $? -ne 0 ]; then
-  if [ "$NEED_STASH" = "1" ]; then
-    log "Application du stash fait précédemment"
-    git stash pop > $SORTIE_LOG
-  fi
-  errorHandler "Erreur lors de la mise à jours des sources :("
-fi
+errorHandler "Erreur lors de la mise à jour des sources depuis \"origin\""
 
-if [ "$NEED_STASH" = "1" ]; then
-  log "Application du stash fait précédemment"
+if [ -n "$HAS_STASH" ]; then
+  log "Application du stash précédemment créé"
   git stash pop > $SORTIE_LOG
 fi
 
-### Détermine la branche courante du clone"
+
+### Créer le clone du dépot local s'il n'existe pas
+if [ ! -d "$PRIVATE_BUILD" ]; then
+  log "Création du clone : $PRIVATE_BUILD"
+  git clone . "$PRIVATE_BUILD"
+fi
+
+
+### Détermine la branche courante du clone
 cd $PRIVATE_BUILD
 CLONE_BRANCH="$(git rev-parse --symbolic --abbrev-ref $(git symbolic-ref HEAD))"
 
-### Change la branche du clone avec celle correspondant à celle du dépot local ou la créer si elle n'existe pas.
+### Charge dans le clone la branche de travail courante ou la créer si elle n'existe pas.
 if [ "$CURRENT_BRANCH" != "$CLONE_BRANCH" ]; then
   if [ 0 -eq `git branch | grep -c "$CURRENT_BRANCH"` ]; then
     log "La branche n'est pas présente dans le clone. Création de la branche."
     git fetch > $PRIVATE_BUILD_LOG/checkout_branch.log
     git checkout origin/$CURRENT_BRANCH -b $CURRENT_BRANCH > $SORTIE_LOG
-    errorHandler "Erreur lors de la création de la branch :("
+    errorHandler "Erreur lors de la création de la branch"
   else  
     log "checkout de la branche pour le clone"
     git checkout $CURRENT_BRANCH > $SORTIE_LOG
-    errorHandler "Erreur lors du changement de branche :("
+    errorHandler "Erreur lors du changement de branche"
   fi
 fi
 
 log "Nettoyage du clone"
 git clean -df >$SORTIE_LOG
-
 log "Mise à jour du clone"
 git pull --rebase > $SORTIE_LOG
 
-log "Compilation du projet depuis le clone"
-/opt/local/bin/mvn clean install -Dmaven.test.skip > $SORTIE_LOG
-errorHandler "Erreur de compilation :("
-
-log "Exécution des tests depuis le clone"
-/opt/local/bin/mvn integration-test > $SORTIE_LOG
-errorHandler "Erreur lors de l'exécution des test :("
-
-
-log "Construction du ZIP pour envoi sur VM"
-/opt/local/bin/mvn package -Dmaven.test.skip -PpackageEarData  > $SORTIE_LOG
-errorHandler "Erreur de la génération du zip"
-
-log "Deploiement de l'application sur un vm de test"
-#Renommage du zip comme attendu par le script de redéploiement sur la vm
-mv ear/ear/target/earData.zip ear/ear/target/consoleUploadedFile
-
-log "Upload du zip"
-scp ear/ear/target/consoleUploadedFile service@$PERSONAL_VM:/home/service/> $SORTIE_LOG
-errorHandler "Erreur lors du déploiement de l'ear sur $PERSONAL_VM"
-
-log "Redémarrage du JBOSS sur $PERSONAL_VM"
-ssh service@$PERSONAL_VM "/home/service/service.sh refresh" > $SORTIE_LOG
-errorHandler "Erreur lors du démarrage de JBOSS"
-
-log "Application deployée, lancement des tests fonctionnels"
-mvn test -PoldTestsFonctionnels -Dtest=com.financeactive.insito.RunAllTests
-if [ $? -ne 0 ]; then
- echo ; echo
- ssh service@$PERSONAL_VM "/home/service/service.sh stop" > $SORTIE_LOG
- if [ 0 -eq $VERBOSE ];then
-	 tail -50 $PRIVATE_BUILD_LOG/sortie.log
-  if;
-  echo ">>>>ERROR: Erreur lors des tests fonctionnels"
-  cd $INIT_DIR > /dev/null
-  exit
+EXECUTION_PLACE=$PRIVATE_BUILD
+COMMAND="sh -c"
+scp $SCRIPTS_DIRECTORY/safe-commons "$PRIVATE_BUILD"
+scp $SCRIPTS_DIRECTORY/insito-push-validator.sh "$PRIVATE_BUILD/validator.sh" #TODO : détecter quel validateur utiliser
+if [ -n "$REMOTE" ]; then
+  log "Upload sur " $PERSONAL_VM
+  EXECUTION_PLACE="/home/service/remote-run/"
+  rsync -az --delete $PRIVATE_BUILD/* service@"$PERSONAL_VM":"$EXECUTION_PLACE"
+  COMMAND="ssh service@$PERSONAL_VM source ~/.profile ; cd $EXECUTION_PLACE ; sh "
 fi
 
-log "Tests fonctionnels OK, stop de l'instance JBOSS"
-ssh service@$PERSONAL_VM "/home/service/service.sh stop" > $SORTIE_LOG
+log "Validation.."
+$COMMAND $EXECUTION_PLACE/validator.sh $PERSONAL_VM > $SORTIE_LOG
+errorHandler "Erreur lors de la validation"
 
-log "Mise à jour du répo. distant : $REMOTE_REPO $CURRENT_BRANCH"
-
-if [ $# -ge 1 ] &&  [ "--dry-run" = $1 ]; then
-	git push -n $REMOTE_REPO $CURRENT_BRANCH
-else if [ $# -ge 2 ] &&  [ "--dry-run" = $2 ]; then
-		git push -n $REMOTE_REPO $CURRENT_BRANCH
-	else
-		git push $REMOTE_REPO $CURRENT_BRANCH
-	fi
-fi
-
-
-cd $INIT_DIR  > /dev/null
-
+log "Mise à jour du repository \"origin\" : $REMOTE_REPO $CURRENT_BRANCH"
 git pull
+git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_BRANCH
 
 echo
 log "Terminé avec succès :)"

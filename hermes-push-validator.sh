@@ -1,14 +1,13 @@
 #!/bin/sh
 
-echo "* Compilation du projet depuis le clone"
+. `dirname $0`/safe-commons
+VERBOSE="pas de dump des logs depuis les validateurs -- voir safe-commons/errorHandler"
+
+log "Compilation du projet depuis le clone"
 mvn clean install -Dmaven.test.skip
-if [ $? -ne 0 ]; then
-  echo ; echo ; echo ">>>> Erreur de compilation :("
-  exit 1
-fi
-echo "* Exécution des tests depuis le clone"
+errorHandler "Erreur de compilation"
+
+log "Exécution des tests depuis le clone"
 mvn test
-if [ $? -ne 0 ]; then
-  echo ; echo ; echo ">>>> Erreur lors de l'exécution des test :("
-  exit 1
-fi
+errorHandler "Erreur lors de l'exécution des tests"
+

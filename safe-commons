@@ -1,0 +1,27 @@
+
+##Fonction de log
+#@param 1 message à logger
+log() {
+  echo "\033[0;32m* "$1"\033[0m"
+}
+
+##Fonction de log d'erreur
+#@param 1 message à logger
+logError() {
+  echo ; echo
+  echo "\033[1;31m>>>>ERROR : "$1" :(\033[0m"
+  echo 
+  exit 1
+}
+
+##Fonction de gestion des messages d'erreur
+#@param 1 message d'erreur
+errorHandler() {
+  if [ $? -ne 0 ]; then
+    if [ -z "$VERBOSE" ]; then
+      tail -50 $SORTIE_LOG     
+    fi
+    logError "$1"
+  fi
+}
+
