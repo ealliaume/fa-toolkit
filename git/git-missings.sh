@@ -20,9 +20,9 @@ fi
 BRANCH_START="$(git rev-parse --symbolic --abbrev-ref $(git symbolic-ref HEAD))"
 
 if [ $# -eq 0 ]; then
-   REMOTE=$(git config "branch.${BRANCH_START}.remote") || (echo "Il n'y a pas de branche distante associée à $BRANCH_START";exit)
+   REMOTE=$(git config branch.${BRANCH_START}.remote) || (echo "Il n'y a pas de branche distante associée à $BRANCH_START";exit)
    REMOTE_BRANCH=$(git config branch.$BRANCH_START.merge) || ( echo "Il n'y a pas de branche distante associée à $BRANCH_START";exit)
-   BRANCH_END="$REMOTE/${REMOTE_BRANCH##refs/heads/}"
+   BRANCH_END=$REMOTE/${REMOTE_BRANCH##refs/heads/}
 fi
 
 if [ $# -eq 1 ]; then
