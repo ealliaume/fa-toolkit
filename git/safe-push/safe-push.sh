@@ -10,6 +10,11 @@ SCRIPTS_DIRECTORY=`dirname $0`
 CURRENT_WORKING_DIR="$(git rev-parse --show-toplevel)"
 CURRENT_BRANCH="$(git rev-parse --symbolic --abbrev-ref $(git symbolic-ref HEAD))"
 
+REMOTE_ALIAS=$(git config branch.$CURRENT_BRANCH.remote)
+REMOTE_REPO=$(git config remote.$REMOTE_ALIAS.url)
+REMOTE_BRANCH=$(git config branch.$CURRENT_BRANCH.merge)
+REMOTE_BRANCH=${REMOTE_BRANCH##refs/heads/}
+
 PRIVATE_BUILD="${CURRENT_WORKING_DIR}/../clone/${CURRENT_WORKING_DIR##*/}"
 PRIVATE_BUILD_LOG="${PRIVATE_BUILD}_log"
 SORTIE_LOG=$PRIVATE_BUILD_LOG/sortie.log
@@ -48,16 +53,9 @@ log "Liste des commits en attente de push"
 git log origin/master.. --format='%Cred%h%Creset;%C(yellow)%an%Creset;%H;%Cblue%f%Creset' | git name-rev --stdin --always --name-only | column -t -s';'
 
 #### Teste si la branche courante est une 'tracked branch'
-log "Vérification de l'existence de la branche sur le repository \"origin\""
-if [ 0 -eq `git ls-remote origin refs/heads/$CURRENT_BRANCH | grep -c "$CURRENT_BRANCH"` ]; then
+log "Vérification de l'existence de la branche sur le repository $REMOTE_ALIAS"
+if [ 0 -eq `git ls-remote $REMOTE_ALIAS refs/heads/$CURRENT_BRANCH | grep -c "$CURRENT_BRANCH"` ]; then
   logError "Cette branche n'existe pas sur le repository \"origin\""
-fi
-
-### Détermine le dépot distant
-if [ 0 -eq `git remote -v | grep -c push` ]; then
-  REMOTE_REPO=`git remote -v | sed 's/origin//'`
-else
-  REMOTE_REPO=`git remote -v | grep "(push)" | sed 's/origin//' | sed 's/(push)//'`
 fi
 
 log "Détection des modifications (non commitées) en cours..." 
@@ -69,7 +67,7 @@ fi
 
 log "Mise à jour des sources"
 git pull --rebase > $SORTIE_LOG
-errorHandler "Erreur lors de la mise à jour des sources depuis \"origin\""
+errorHandler "Erreur lors de la mise à jour des sources depuis $REMOTE_ALIAS"
 
 if [ -n "$HAS_STASH" ]; then
   log "Application du stash précédemment créé"
@@ -93,7 +91,7 @@ if [ "$CURRENT_BRANCH" != "$CLONE_BRANCH" ]; then
   if [ 0 -eq `git branch | grep -c "$CURRENT_BRANCH"` ]; then
     log "La branche n'est pas présente dans le clone. Création de la branche."
     git fetch > $PRIVATE_BUILD_LOG/checkout_branch.log
-    git checkout origin/$CURRENT_BRANCH -b $CURRENT_BRANCH > $SORTIE_LOG
+    git checkout $REMOTE_ALIAS/$CURRENT_BRANCH -b $CURRENT_BRANCH > $SORTIE_LOG
     errorHandler "Erreur lors de la création de la branch"
   else  
     log "checkout de la branche pour le clone"
@@ -122,9 +120,11 @@ log "Validation.."
 $COMMAND $EXECUTION_PLACE/validator.sh $PERSONAL_VM > $SORTIE_LOG
 errorHandler "Erreur lors de la validation"
 
-log "Mise à jour du repository \"origin\" : $REMOTE_REPO $CURRENT_BRANCH"
-git pull
+log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $CURRENT_BRANCH"
 git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_BRANCH
+
+cd $CURRENT_WORKING_DIR > /dev/null
+git pull
 
 echo
 log "Terminé avec succès :)"
