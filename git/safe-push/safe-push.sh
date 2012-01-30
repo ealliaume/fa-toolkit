@@ -54,7 +54,7 @@ git log origin/master.. --format='%Cred%h%Creset;%C(yellow)%an%Creset;%H;%Cblue%
 
 #### Teste si la branche courante est une 'tracked branch'
 log "Vérification de l'existence de la branche sur le repository $REMOTE_ALIAS"
-if [ 0 -eq `git ls-remote $REMOTE_ALIAS refs/heads/$CURRENT_BRANCH | grep -c "$CURRENT_BRANCH"` ]; then
+if [ 0 -eq `git ls-remote $REMOTE_ALIAS refs/heads/$REMOTE_BRANCH | grep -c "$REMOTE_BRANCH"` ]; then
   logError "Cette branche n'existe pas sur le repository $REMOTE_ALIAS"
 fi
 
