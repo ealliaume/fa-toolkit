@@ -55,7 +55,7 @@ git log origin/master.. --format='%Cred%h%Creset;%C(yellow)%an%Creset;%H;%Cblue%
 #### Teste si la branche courante est une 'tracked branch'
 log "Vérification de l'existence de la branche sur le repository $REMOTE_ALIAS"
 if [ 0 -eq `git ls-remote $REMOTE_ALIAS refs/heads/$CURRENT_BRANCH | grep -c "$CURRENT_BRANCH"` ]; then
-  logError "Cette branche n'existe pas sur le repository \"origin\""
+  logError "Cette branche n'existe pas sur le repository $REMOTE_ALIAS"
 fi
 
 log "Détection des modifications (non commitées) en cours..." 
@@ -121,7 +121,7 @@ $COMMAND $EXECUTION_PLACE/validator.sh $PERSONAL_VM > $SORTIE_LOG
 errorHandler "Erreur lors de la validation"
 
 log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $CURRENT_BRANCH"
-git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_BRANCH
+git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_BRANCH:$REMOTE_BRANCH
 
 cd $CURRENT_WORKING_DIR > /dev/null
 git pull
