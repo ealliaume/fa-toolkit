@@ -19,10 +19,6 @@ PRIVATE_BUILD="${CURRENT_WORKING_DIR}/../clone/${CURRENT_WORKING_DIR##*/}"
 PRIVATE_BUILD_LOG="${PRIVATE_BUILD}_log"
 SORTIE_LOG=$PRIVATE_BUILD_LOG/sortie.log
 
-if [ -z $PERSONAL_VM ]; then
-  logError "La variable \"PERSONAL_VM\" doit être positionnée pour indiquer la VM de remote-run/tests fonctionnels"
-fi
-
 while true ; do
   case "$1" in
     -r|--remote)
@@ -43,6 +39,10 @@ while true ; do
   esac
 done
 
+if [[ -z $PERSONAL_VM ]] && [[ -n $REMOTE ]]; then
+  logError "La variable \"PERSONAL_VM\" doit être positionnée pour indiquer la VM de remote-run/tests fonctionnels"
+fi
+exit
 
 if [ -z "$VERBOSE" ]; then
   rm -rf $PRIVATE_BUILD_LOG/*.log
