@@ -8,12 +8,21 @@
 #
 # git missings,  git missings origin/master,  git master origin/master sont équivalents si la branch master est la branche en cours et qu'elle est associée à la branche distante master du dépôt origin
 
-if [ $# -eq 1 ] && [ $1=="-h" ]; then
+if [ $# -eq 1 ] && [ "$1" = "-h" ]; then
    echo "Affiche les différences de commits entre deux branches."
-   echo "git missings                   --> affiche les commits absents entre la branche en cours et la branche distante associée. Indique donc les commits non encore poussé vers le dépôt distant."
-   echo "git missings branche1          --> affiche les commits absents entre la branche en cours et le branche 'branche1'"
-   echo "git missings branche1 branche2 --> affiche les commits absents entre 'branche1' et 'branch2'"
-   echo "git missings,  git missings origin/master,  git master origin/master sont équivalents si la branch master est la branche en cours et qu'elle est associée à la branche distante master du dépôt origin"
+   echo "git missings"
+   echo "   --> affiche la différence de commits entre la branche en cours et la branche distante associée." 
+   echo "       Indique donc les commits non encore poussé vers le dépôt distant."
+   echo
+   echo "git missings branche1"
+   echo "   --> affiche les commits absents entre la branche en cours et le branche 'branche1'"
+   echo
+   echo "git missings branche1 branche2"
+   echo "   --> affiche les commits absents entre 'branche1' et 'branch2'"
+   echo
+   echo "git missings,  git missings origin/master,  git master origin/master"
+   echo "   sont équivalents si la branche master est la branche en cours et" 
+   echo "   qu'elle est associée à la branche distante master du dépôt origin"
    exit
 fi
 
