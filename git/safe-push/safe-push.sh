@@ -50,7 +50,8 @@ if [ -z "$VERBOSE" ]; then
 fi
 
 log "Liste des commits en attente de push"
-git log origin/master.. --format='%Cred%h%Creset;%C(yellow)%an%Creset;%H;%Cblue%f%Creset' | git name-rev --stdin --always --name-only | column -t -s';'
+git log $REMOTE_ALIAS/$REMOTE_BRANCH.. --format='; ;%Cred%h%Creset;%C(yellow)%cd%Creset;%f' --date=iso | column -t -s';'
+echo
 
 #### Teste si la branche courante est une 'tracked branch'
 log "Vérification de l'existence de la branche sur le repository $REMOTE_ALIAS"
