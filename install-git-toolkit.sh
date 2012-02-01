@@ -1,13 +1,9 @@
 #!/bin/sh
 # @author: Christophe Amory
 
-LINK_DIR=~/fa-git-toolkit
-GIT_TOOLKIT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/git
-echo $GIT_TOOLKIT_DIR
-
-if [ ! -d $LINK_DIR ]; then
-	mkdir -p $LINK_DIR
-fi
+LINK_DIR="$HOME/.fa-toolkit"
+TOOLKIT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+echo $TOOLKIT_DIR
 
 echo " - Ajout des alias de base"
 echo "		* br = branch"
@@ -34,9 +30,9 @@ echo "		* unstage = reset HEAD -- (annule les dernières modifications non encor
 git config --local --unset alias.unstage
 git config --global alias.unstage 'reset --soft HEAD^'
 
-echo " - Ajout de git missings" 
-if [ ! -e $LINK_DIR/git-missings ]; then
-	ln -s $GIT_TOOLKIT_DIR/git-missings.sh $LINK_DIR/git-missings
+if [ ! -d $LINK_DIR ]; then
+	ln -s $TOOLKIT_DIR $LINK_DIR
 fi
+echo " - Ajout de git missings" 
 git config --local --unset alias.missings
-git config --global alias.missings '!sh '${LINK_DIR}'/git-missings'
+git config --global alias.missings '!sh '${LINK_DIR}'/git/git-missings.sh'
