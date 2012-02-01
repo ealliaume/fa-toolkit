@@ -20,7 +20,6 @@ JBOSS_HOME=/home/service/jboss-4.0.5.GA
 DEFAULT_COMMAND="source ~/.bashrc ; cd /home/service/remote-run/;";
 
 remoteCommand() {
-    
     COMMAND="${DEFAULT_COMMAND}${1}"
     ssh -T service@$PERSONAL_VM $COMMAND > $SORTIE_LOG
 }
