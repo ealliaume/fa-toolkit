@@ -9,6 +9,7 @@ SCRIPTS_DIRECTORY=`dirname $0`
 
 CURRENT_WORKING_DIR="$(git rev-parse --show-toplevel)"
 CURRENT_BRANCH="$(git rev-parse --symbolic --abbrev-ref $(git symbolic-ref HEAD))"
+CURRENT_REVISION="$( git log --pretty=%H -1)"
 
 REMOTE_ALIAS=$(git config branch.$CURRENT_BRANCH.remote)
 REMOTE_REPO=$(git config remote.$REMOTE_ALIAS.url)
@@ -41,8 +42,8 @@ done
 
 if [[ -z $PERSONAL_VM ]] && [[ -n $REMOTE ]]; then
   logError "La variable \"PERSONAL_VM\" doit être positionnée pour indiquer la VM de remote-run/tests fonctionnels"
+  exit
 fi
-exit
 
 if [ -z "$VERBOSE" ]; then
   rm -rf $PRIVATE_BUILD_LOG/*.log
@@ -55,7 +56,7 @@ echo
 
 #### Teste si la branche courante est une 'tracked branch'
 log "Vérification de l'existence de la branche sur le repository $REMOTE_ALIAS"
-if [ 0 -eq `git ls-remote $REMOTE_ALIAS refs/heads/$REMOTE_BRANCH | grep -c "$REMOTE_BRANCH"` ]; then
+if [ -z $REMOTE_BRANCH ]; then
   logError "Cette branche n'existe pas sur le repository $REMOTE_ALIAS"
 fi
 
@@ -81,6 +82,7 @@ if [ ! -d "$PRIVATE_BUILD" ]; then
   log "Création du clone : $PRIVATE_BUILD"
   git clone . "$PRIVATE_BUILD"
 fi
+
 
 
 ### Détermine la branche courante du clone
@@ -121,11 +123,9 @@ log "Validation.."
 $COMMAND $EXECUTION_PLACE/validator.sh $PERSONAL_VM > $SORTIE_LOG
 errorHandler "Erreur lors de la validation"
 
-log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $CURRENT_BRANCH"
-git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_BRANCH:$REMOTE_BRANCH
-
 cd $CURRENT_WORKING_DIR > /dev/null
-git pull
+log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $CURRENT_REVISION"
+git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
 
 echo
 log "Terminé avec succès :)"

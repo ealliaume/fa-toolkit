@@ -6,6 +6,7 @@ git config --local branch.patch.rebase true
 git config --local branch.master.rebase true
 
 git config --local alias.safe-push '!sh '${LINK_DIR}'/git/safe-push/safe-push.sh'
+git config --local alias.remote-safe-push '!sh '${LINK_DIR}'/git/insito/remote-safe-push.sh'
 
 if [ 1 -eq $# ]; then
     $LINK_DIR/git/safe-push/install-remote-run-poste.sh $1

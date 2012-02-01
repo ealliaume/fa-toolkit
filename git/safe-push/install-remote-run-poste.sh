@@ -31,8 +31,7 @@ ssh service@$PERSONAL_VM echo "Connection OK"
 
 log "Ajout du remote \"remote-run\" dans git"
 git remote add remote-run service@$PERSONAL_VM:/home/service/remote-run
-log "Ajout de l'alias \"git remote-run\""
-#TODO
+
 log "Initialisation du repo distant"
 git push remote-run +HEAD:master
 
