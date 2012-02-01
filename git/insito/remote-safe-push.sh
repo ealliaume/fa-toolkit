@@ -105,12 +105,18 @@ sleep 30
 
 log "Lancement des TFs"
 remoteCommand "mvn clean install -PoldTestsFonctionnels -Dtest=com.financeactive.insito.RunAllTests" > $SORTIE_LOG
-errorHandler "Erreur lors des tests fonctionnels"
+if [ $? -ne 0 ]; then
+    if [ -z "$VERBOSE" ]; then
+        tail -50 $SORTIE_LOG     
+    fi
+    remoteCommand "sh ~/service.sh stop">$SORTIE_LOG
+    logError "Erreur lors des tests fonctionnels"
+fi
 
 remoteCommand "sh ~/service.sh stop">$SORTIE_LOG
 
-log "Mise à jour du repository \"origin\" : $REMOTE_REPO $CURRENT_BRANCH"
-#git push $GIT_DRY_RUN origin $CURRENT_BRANCH
+log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $CURRENT_REVISION"
+git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
 
 echo
 log "Terminé avec succès :)"
