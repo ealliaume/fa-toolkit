@@ -16,7 +16,7 @@ REMOTE_REPO=$(git config remote.$REMOTE_ALIAS.url)
 REMOTE_BRANCH=$(git config branch.$CURRENT_BRANCH.merge)
 REMOTE_BRANCH=${REMOTE_BRANCH##refs/heads/}
 
-PRIVATE_BUILD="${CURRENT_WORKING_DIR}/../clone/${CURRENT_WORKING_DIR##*/}"
+PRIVATE_BUILD="${CURRENT_WORKING_DIR}/../remote-run/${CURRENT_WORKING_DIR##*/}"
 PRIVATE_BUILD_LOG="${PRIVATE_BUILD}_log"
 SORTIE_LOG=$PRIVATE_BUILD_LOG/sortie.log
 
@@ -50,9 +50,10 @@ while true ; do
   esac
 done
 
-if [ -z "$VERBOSE" ]; then
-  rm -rf $PRIVATE_BUILD_LOG/*.log
-  mkdir -p $PRIVATE_BUILD $PRIVATE_BUILD_LOG 
+if [ ! -d $PRIVATE_BUILD_LOG ]; then
+    mkdir -p $PRIVATE_BUILD_LOG 
+else 
+    rm -rf $PRIVATE_BUILD_LOG/*.log
 fi
 
 log "Liste des commits en attente de push"
