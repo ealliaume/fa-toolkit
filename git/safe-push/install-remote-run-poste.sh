@@ -8,7 +8,7 @@ if [ $# -eq 0 ]; then
 fi
 
 if [ ! -d ./.git ]; then
-	echo "Le script doit être lancé depuis le répertoire principale de votre projet git"
+	echo "Le script doit être lancé depuis le répertoire principal de votre projet git"
 	exit 1
 fi
 	log "Upload de votre clé sur votre VM"
@@ -19,24 +19,32 @@ fi
 	fi
 rm ssh-deploy-pubkey.sh
 
-if [ 0 -eq ` grep PERSONAL_VM ~/.profile | wc -l` ]; then
+if [ -f ~/.bashrc  ]; then
+	if [ 0 -eq ` grep PERSONAL_VM ~/.bash_profile | wc -l` ]; then
+        log "Ajout de la variable d'environnement dans .bash_profile"
+       	echo "export PERSONAL_VM=$1" >> ~/.bash_profile
+       	echo "alias vm=\"ssh service@$1\"" >> ~/.bash_aliases
+	fi
+elif [ 0 -eq ` grep PERSONAL_VM ~/.profile | wc -l` ]; then
 	log "Ajout de la variable d'environnement dans .profile"
-	echo "export \$PERSONAL_VM=$1" >> ~/.profile
+	echo "export PERSONAL_VM=$1" >> ~/.profile
+	echo "alias vm=\"ssh service@$1\"" >> ~/.profile
 else
 	log "Vous avez déjà initialiser votre PERSONAL_VM"
 fi
 
-log "Test de connection à la VM: ssh service@$PERSONAL_VM"
-ssh service@$PERSONAL_VM echo "Connection OK"
+log "Test de connection à la VM: ssh service@$1"
+ssh service@$1 echo "Connection OK"
 
 log "Ajout du remote \"remote-run\" dans git"
-git remote add remote-run service@$PERSONAL_VM:/home/service/remote-run
+git remote rm remote-run 
+git remote add remote-run service@$1:/home/service/remote-run
 
 log "Initialisation du repo distant"
-git push remote-run +HEAD:master
+git push remote-run +master:master
 
 log "Test de compilation sur le repo distant"
-ssh service@$PERSONAL_VM ". ~/.bashrc; cd ~/remote-run/; git checkout -f; mvn install -Dmaven.test.skip"
+ssh service@$1 ". ~/.bashrc; cd ~/remote-run/; git checkout -f; mvn install -Dmaven.test.skip"
 
 echo
 log "Installation OK"

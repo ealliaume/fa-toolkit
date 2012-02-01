@@ -3,7 +3,7 @@ log() {
 }
 
 log "Installation de git"
-sudo apt-get install git
+sudo apt-get update && apt-get install git
 
 log "Installation de Protobuff"
 
