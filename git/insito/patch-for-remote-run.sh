@@ -1,6 +1,12 @@
-log() {
-  echo "\033[0;32m* "$1"\033[0m"
-}
+#!/bin/sh
+# @author Christophe Amory
+# @author Xavier Bucchiotty
+# @author Cédric Pineau
+# Remote run
+
+SCRIPTS_DIRECTORY=`dirname $0`
+. $SCRIPTS_DIRECTORY/../safe-push/safe-commons
+
 
 log "Installation de git"
 sudo apt-get update && apt-get install git
@@ -36,7 +42,7 @@ if [ ! -d ~/remote-run ]; then
 	git init .
 	git config receive.denyCurrentBranch ignore
 	git config receive.denyDeleteCurrent ignore
-	log "Repo créé sur ~/remote-run"
+	log "Repo créé sur ${HOME}/remote-run"
 else
 	log "Vous avez déjà votre repo \"remote-run\""
 fi
