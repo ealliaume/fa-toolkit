@@ -8,7 +8,7 @@ sudo apt-get update && apt-get install git
 log "Installation de Protobuff"
 
 if [ 0 -eq `grep http://rodolphe.quiedeville.org/debian /etc/apt/sources.list | wc -l `]; then
-	sudo echo "http://rodolphe.quiedeville.org/debian squeeze-backports main" >> /etc/apt/sources.list
+	sudo sh -c 'echo "http://rodolphe.quiedeville.org/debian squeeze-backports main" >> /etc/apt/sources.list'
 fi
 sudo  apt-get install libprotobuf-dev protobuf-compiler
 
