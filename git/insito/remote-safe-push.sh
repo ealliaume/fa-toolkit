@@ -20,7 +20,6 @@ PRIVATE_BUILD="${CURRENT_WORKING_DIR}/../remote-run/${CURRENT_WORKING_DIR##*/}"
 PRIVATE_BUILD_LOG="${PRIVATE_BUILD}_log"
 SORTIE_LOG=$PRIVATE_BUILD_LOG/sortie.log
 
-JBOSS_HOME=/home/service/jboss-4.0.5.GA
 DEFAULT_COMMAND="source ~/.bashrc ; cd /home/service/remote-run/;";
 
 remoteCommand() {
@@ -96,10 +95,10 @@ remoteCommand "mvn integration-test"
 errorHandler "Erreur lors des tests d'intégrations"
 
 log "Lancement du JBOSS"
-remoteCommand "sh ~/service.sh stop">$SORTIE_LOG
+remoteCommand "sh ~/service.sh stop" &2>1 > $SORTIE_LOG
 sleep 5
-ssh service@$PERSONAL_VM 'rm -rf ${JBOSS_HOME}/server/insito/tmp/*;rm -rf ${JBOSS_HOME}/server/insito/work/*;' > $SORTIE_LOG
-ssh service@$PERSONAL_VM 'source ~/.bashrc;${JBOSS_HOME}/bin/run.sh -c insito ' > $SORTIE_LOG &
+ssh service@$PERSONAL_VM 'rm -rf /home/service/jboss-4.0.5.GA/server/insito/tmp/*;rm -rf /home/service/jboss-4.0.5.GA/server/insito/work/*;' > $SORTIE_LOG
+ssh service@$PERSONAL_VM 'source ~/.bashrc;/home/service/jboss-4.0.5.GA/bin/run.sh -c insito ' > $SORTIE_LOG &
 errorHandler "Erreur lors du démarrage de JBOSS"
 
 sleep 30
@@ -110,11 +109,11 @@ if [ $? -ne 0 ]; then
     if [ -z "$VERBOSE" ]; then
         tail -50 $SORTIE_LOG     
     fi
-    remoteCommand "sh ~/service.sh stop">$SORTIE_LOG
+    remoteCommand "sh ~/service.sh stop" &2>1 >$SORTIE_LOG
     logError "Erreur lors des tests fonctionnels"
 fi
 
-remoteCommand "sh ~/service.sh stop">$SORTIE_LOG
+remoteCommand "sh ~/service.sh stop" &2>1 >$SORTIE_LOG
 
 log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $CURRENT_REVISION"
 git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
