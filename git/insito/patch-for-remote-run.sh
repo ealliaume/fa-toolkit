@@ -4,8 +4,8 @@
 # @author Cédric Pineau
 # Remote run
 
-SCRIPTS_DIRECTORY=`dirname $0`
-. $SCRIPTS_DIRECTORY/../safe-push/safe-commons
+SCRIPTS_DIRECTORY=~/.fa-toolkit
+. $SCRIPTS_DIRECTORY/git/safe-push/safe-commons
 
 
 log "Installation de git"

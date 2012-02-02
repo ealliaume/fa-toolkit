@@ -4,8 +4,8 @@
 # @author Cédric Pineau
 # Remote run
 
-SCRIPTS_DIRECTORY=`dirname $0`
-. $SCRIPTS_DIRECTORY/../safe-push/safe-commons
+SCRIPTS_DIRECTORY=~/.fa-toolkit
+. $SCRIPTS_DIRECTORY/git/safe-push/safe-commons
 
 CURRENT_WORKING_DIR="$(git rev-parse --show-toplevel)"
 CURRENT_BRANCH="$(git rev-parse --symbolic --abbrev-ref $(git symbolic-ref HEAD))"
@@ -16,11 +16,11 @@ REMOTE_REPO=$(git config remote.$REMOTE_ALIAS.url)
 REMOTE_BRANCH=$(git config branch.$CURRENT_BRANCH.merge)
 REMOTE_BRANCH=${REMOTE_BRANCH##refs/heads/}
 
-PRIVATE_BUILD="${CURRENT_WORKING_DIR}/../remote-run/${CURRENT_WORKING_DIR##*/}"
+PRIVATE_BUILD="~/.safe-push/${CURRENT_WORKING_DIR##*/}"
 PRIVATE_BUILD_LOG="${PRIVATE_BUILD}_log"
 SORTIE_LOG=$PRIVATE_BUILD_LOG/sortie.log
 
-DEFAULT_COMMAND="source ~/.bashrc ; cd /home/service/remote-run/;";
+DEFAULT_COMMAND="cd /home/service/remote-run/;";
 
 remoteCommand() {
     COMMAND="${DEFAULT_COMMAND}${1}"
@@ -85,20 +85,16 @@ errorHandler "Erreur lors de la mise à jour des sources depuis \"origin\""
 
 
 #DEBUT DE LA VALIDATION
-log "Lancement de la compilation"
+log "Lancement de la compilation, TU et TI"
 remoteCommand "git clean -df; git checkout -f ${CURRENT_BRANCH}"
-remoteCommand "mvn clean install -Dmaven.test.skip"
-errorHandler "Erreur lors de la compilation"
-
-log "Lancement des TI"
-remoteCommand "mvn integration-test"
-errorHandler "Erreur lors des tests d'intégrations"
+remoteCommand "mvn clean install"
+errorHandler "Erreur lors de la compilation, TU ou TI"
 
 log "Lancement du JBOSS"
 remoteCommand "sh ~/service.sh stop" &2>1 > $SORTIE_LOG
 sleep 5
 ssh service@$PERSONAL_VM 'rm -rf /home/service/jboss-4.0.5.GA/server/insito/tmp/*;rm -rf /home/service/jboss-4.0.5.GA/server/insito/work/*;' > $SORTIE_LOG
-ssh service@$PERSONAL_VM 'source ~/.bashrc;/home/service/jboss-4.0.5.GA/bin/run.sh -c insito ' > $SORTIE_LOG &
+ssh service@$PERSONAL_VM '/home/service/jboss-4.0.5.GA/bin/run.sh -c insito ' > $SORTIE_LOG &
 errorHandler "Erreur lors du démarrage de JBOSS"
 
 sleep 30

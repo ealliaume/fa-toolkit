@@ -1,23 +1,23 @@
-log() {
-  echo "\033[0;32m* "$1"\033[0m"
-}
+#!/bin/sh
+# @author Christophe Amory
+# @author Xavier Bucchiotty
+# @author Cédric Pineau
+# Remote run
+
+SCRIPTS_DIRECTORY=~/.fa-toolkit
+. $SCRIPTS_DIRECTORY/git/safe-push/safe-commons
 
 if [ $# -eq 0 ]; then
-	echo "Il faut passer en paramètre du script le nom de votre VM"
-	exit 1
+	logError "Il faut passer en paramètre du script le nom de votre VM"
 fi
 
 if [ ! -d ./.git ]; then
-	echo "Le script doit être lancé depuis le répertoire principal de votre projet git"
-	exit 1
+	logError "Le script doit être lancé depuis le répertoire principal de votre projet git"
 fi
-	log "Upload de votre clé sur votre VM"
- 	curl https://raw.github.com/olemerdy-fa/toolinux/master/macosx/ssh-deploy-pubkey.sh --output ssh-deploy-pubkey.sh
-	sh ./ssh-deploy-pubkey.sh service@$1
-	if [ $? -ne 0 ]; then
-		echo ">>ERREUR LORS DE L'UPLOAD DE VOTRE CLE"
-	fi
-rm ssh-deploy-pubkey.sh
+
+log "Upload de votre clé sur votre VM"
+sh $SCRIPTS_DIRECTORY/ssh/ssh-deploy-pubkey.sh service@$1
+errorHandler "ERREUR LORS DE L'UPLOAD DE VOTRE CLE"
 
 if [ -f ~/.bashrc  ]; then
 	if [ 0 -eq ` grep PERSONAL_VM ~/.bash_profile | wc -l` ]; then
@@ -30,11 +30,11 @@ elif [ 0 -eq ` grep PERSONAL_VM ~/.profile | wc -l` ]; then
 	echo "export PERSONAL_VM=$1" >> ~/.profile
 	echo "alias vm=\"ssh service@$1\"" >> ~/.profile
 else
-	log "Vous avez déjà initialiser votre PERSONAL_VM"
+	log "Vous avez déjà initialisé votre PERSONAL_VM"
 fi
 
-log "Test de connection à la VM: ssh service@$1"
-ssh service@$1 echo "Connection OK"
+log "Test de connexion à la VM: ssh service@$1"
+ssh service@$1 echo "Connexion OK"
 
 log "Ajout du remote \"remote-run\" dans git"
 git remote rm remote-run 
@@ -44,7 +44,7 @@ log "Initialisation du repo distant"
 git push remote-run +master:master
 
 log "Test de compilation sur le repo distant"
-ssh service@$1 ". ~/.bashrc; cd ~/remote-run/; git checkout -f; mvn install -Dmaven.test.skip"
+ssh service@$1 "cd ~/remote-run/; git checkout -f; mvn install -Dmaven.test.skip"
 
 echo
 log "Installation OK"
