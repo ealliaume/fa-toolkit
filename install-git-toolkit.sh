@@ -18,6 +18,10 @@ echo "		* co = checkout"
 git config --local --unset alias.co
 git config --global alias.co 'checkout'
 
+echo "		* sh = stash"
+git config --local --unset alias.sh
+git config --global alias.sh 'stash'
+
 echo "		* st = status"
 git config --local --unset alias.st
 git config --global alias.st 'status'
