@@ -20,6 +20,7 @@ errorHandler() {
   if [ $? -ne 0 ]; then
     if [ -z "$VERBOSE" ]; then
       tail -50 $SORTIE_LOG     
+      echo "\033[1;31m>>>>REPERTOIRE DE LOG : $SORTIE_LOG\033[0m"
     fi
     logError "$1"
   fi
