@@ -90,7 +90,7 @@ remoteCommand "mvn clean install"
 errorHandler "Erreur lors de la compilation, TU ou TI"
 
 log "Lancement du JBOSS"
-remoteCommand "sh ~/service.sh stop" &2>1 > $SORTIE_LOG
+remoteCommand "sh ~/service.sh stop" 2>&1 > $SORTIE_LOG
 sleep 5
 ssh service@$PERSONAL_VM 'rm -rf /home/service/jboss-4.0.5.GA/server/insito/tmp/*;rm -rf /home/service/jboss-4.0.5.GA/server/insito/work/*;' > $SORTIE_LOG
 ssh service@$PERSONAL_VM '/home/service/jboss-4.0.5.GA/bin/run.sh -c insito ' > $SORTIE_LOG &
