@@ -26,25 +26,27 @@ if [ $# -eq 1 ] && [ "$1" = "-h" ]; then
    exit
 fi
 
-BRANCH_START="$(git rev-parse --symbolic --abbrev-ref $(git symbolic-ref HEAD))"
+CURRENT_BRANCH="$(git rev-parse --symbolic --abbrev-ref $(git symbolic-ref HEAD))"
 
 if [ $# -eq 0 ]; then
-   REMOTE=$(git config branch.${BRANCH_START}.remote)
+   REMOTE=$(git config branch.${CURRENT_BRANCH}.remote)
    if [ -z "$REMOTE" ]; then
-      echo "Il n'y a pas de branche distante associée à $BRANCH_START";
+      echo "Il n'y a pas de branche distante associée à $CURRENT_BRANCH";
    	  exit 1;
    fi
 
-   REMOTE_BRANCH=$(git config branch.$BRANCH_START.merge)
+   REMOTE_BRANCH=$(git config branch.$CURRENT_BRANCH.merge)
    if [ -z "$REMOTE_BRANCH" ]; then
-      echo "Il n'y a pas de branche distante associée à $BRANCH_START";
+      echo "Il n'y a pas de branche distante associée à $CURRENT_BRANCH";
    	  exit 1;
    fi
-   BRANCH_END=$REMOTE/${REMOTE_BRANCH##refs/heads/}
+   BRANCH_START=$REMOTE/${REMOTE_BRANCH##refs/heads/}
+   BRANCH_END=$CURRENT_BRANCH
 fi
 
 if [ $# -eq 1 ]; then
-   BRANCH_END=$1
+   BRANCH_START=$1
+   BRANCH_END=$CURRENT_BRANCH
 fi
 
 if [ $# -eq 2 ]; then
@@ -52,5 +54,5 @@ if [ $# -eq 2 ]; then
    BRANCH_END=$2
 fi
 
-echo "$BRANCH_START < > $BRANCH_END"
+echo "$BRANCH_START< > $BRANCH_END"
 git log --left-right --color-words  --graph --cherry-pick --decorate --pretty=format:'%Cred%h%Creset %C(yellow)[%an]%Creset %s' --abbrev-commit --boundary $BRANCH_START...$BRANCH_END
