@@ -2,14 +2,14 @@
 ##Fonction de log
 #@param 1 message à logger
 log() {
-  echo "\033[0;32m* "$1"\033[0m"
+  echo "\033[0;32m* [$(date +'%d/%m/%y %X')] "$1"\033[0m"
 }
 
 ##Fonction de log d'erreur
 #@param 1 message à logger
 logError() {
   echo ; echo
-  echo "\033[1;31m>>>>ERROR : "$1" :(\033[0m"
+  echo "\033[1;31m [$(date +'%d/%m/%y %X')]  >>>>ERROR : "$1" :(\033[0m"
   echo 
   exit 1
 }
