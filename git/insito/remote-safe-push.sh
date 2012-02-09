@@ -90,7 +90,7 @@ remoteCommand "mvn clean install"
 errorHandler "Erreur lors de la compilation, TU ou TI"
 
 log "Lancement du JBOSS"
-remoteCommand "sh ~/service.sh stop" 2>&1 > $SORTIE_LOG
+remoteCommand "sh ~/service.sh stop"  > $SORTIE_LOG 2>&1
 sleep 5
 ssh service@$PERSONAL_VM 'rm -rf /home/service/jboss-4.0.5.GA/server/insito/tmp/*;rm -rf /home/service/jboss-4.0.5.GA/server/insito/work/*;' > $SORTIE_LOG
 ssh service@$PERSONAL_VM '/home/service/jboss-4.0.5.GA/bin/run.sh -c insito ' > $SORTIE_LOG &
@@ -104,13 +104,13 @@ if [ $? -ne 0 ]; then
     if [ -z "$VERBOSE" ]; then
         tail -50 $SORTIE_LOG     
     fi
-    remoteCommand "sh ~/service.sh stop" &2>1 >$SORTIE_LOG
+    remoteCommand "sh ~/service.sh stop" > $SORTIE_LOG 2>&1
     logError "Erreur lors des tests fonctionnels"
 fi
 
-remoteCommand "sh ~/service.sh stop" &2>1 >$SORTIE_LOG
+remoteCommand "sh ~/service.sh stop" > $SORTIE_LOG 2>&1
 
-log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $CURRENT_REVISION"
+log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $REMOTE_BRANCH"
 git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
 
 echo
