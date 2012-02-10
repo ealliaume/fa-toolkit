@@ -10,7 +10,7 @@ sudo apt-get install git
 
 echo "Installation de Protobuff"
 
-if [ 0 -eq `grep http://rodolphe.quiedeville.org/debian /etc/apt/sources.list | wc -l `]; then
+if [ 0 -eq `grep http://rodolphe.quiedeville.org/debian /etc/apt/sources.list | wc -l ` ]; then
 	sudo sh -c 'echo "deb http://rodolphe.quiedeville.org/debian squeeze-backports main" >> /etc/apt/sources.list'
 fi
 sudo apt-get update
@@ -18,14 +18,22 @@ sudo apt-get install libprotobuf-dev protobuf-compiler
 
 echo "Untar du fichier des fichiers de config et maven"
 cd ~ 
-tar -xvf jboss.tar
-tar -xvf maven.tar
-tar -xvf m2.tar
-mv m2 .m2
-rm jboss.tar
-rm maven.tar
-rm m2.tar
-mv bashrc .bashrc
+if [ -f maven.tar ]; then
+	tar -xvf maven.tar
+	rm maven.tar
+fi
+
+if [ -f m2.tar ]; then
+        tar -xvf m2.tar
+        rm m2.tar
+	mv m2 .m2
+fi
+
+if [ -f bashrc ]; then
+        tar -xvf bashrc
+        rm bashrc
+	mv bashrc .bashrc
+fi
 
 if [ ! -d ~/.ssh ]; then
 echo "Création d'un répertoire ~/.ssh"
