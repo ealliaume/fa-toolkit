@@ -106,6 +106,9 @@ rm -rf $JBOSS_HOME/server/insito/tmp/* $JBOSS_HOME/server/insito/work
 # insito-ds.xml
 link2checkedconf insito-ds.xml $CONF_HOME $JBOSS_HOME/server/insito/deploy
 
+# log4j.xml
+link2checkedconf log4j.xml $CONF_HOME $JBOSS_HOME/server/insito/conf
+
 # properties-service.xml
 link2checkedconf properties-service.xml $CONF_HOME $JBOSS_HOME/server/insito/deploy
 
