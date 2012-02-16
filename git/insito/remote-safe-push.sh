@@ -79,6 +79,12 @@ if [ -n "$HAS_STASH" ]; then
   git stash pop > $SORTIE_LOG
 fi
 
+
+####### Teste si le push au final ne générera pas une erreur
+####### Avant de lancer la batterie de test
+git push -n  $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
+errorHandler "Ce push va provoquer une erreur de merge: merci de merger d'abord votre branche"
+
 git push remote-run +HEAD:$CURRENT_BRANCH > $SORTIE_LOG
 errorHandler "Erreur lors de la mise à jour des sources depuis \"origin\""
 
