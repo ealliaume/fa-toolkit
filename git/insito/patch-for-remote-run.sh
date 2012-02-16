@@ -30,8 +30,6 @@ if [ -f m2.tar ]; then
 fi
 
 if [ -f bashrc ]; then
-        tar -xvf bashrc
-        rm bashrc
 	mv bashrc .bashrc
 fi
 
