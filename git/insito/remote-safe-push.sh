@@ -72,7 +72,7 @@ if [ 0 -ne `git status --porcelain | grep -v '??' | wc -l` ]; then
 fi
 
 log "Mise à jour des sources"
-git pull --rebase > $SORTIE_LOG
+git pull  > $SORTIE_LOG
 
 if [ -n "$HAS_STASH" ]; then
   log "Application du stash précédemment créé"
