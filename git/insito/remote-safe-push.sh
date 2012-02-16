@@ -112,6 +112,7 @@ remoteCommand "sh ~/service.sh stop" > $SORTIE_LOG 2>&1
 
 log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $REMOTE_BRANCH"
 git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
+errorHandler "Problème lors du push"
 
 echo
 log "Terminé avec succès :)"
