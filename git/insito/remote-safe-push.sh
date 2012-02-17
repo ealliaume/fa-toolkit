@@ -74,6 +74,9 @@ fi
 log "Mise à jour des sources"
 git pull  > $SORTIE_LOG
 
+CURRENT_REVISION="$( git log --pretty=%H -1)"
+log "Revision à tester : $CURRENT_REVISION"
+
 if [ -n "$HAS_STASH" ]; then
   log "Application du stash précédemment créé"
   git stash pop > $SORTIE_LOG
