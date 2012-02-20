@@ -73,6 +73,7 @@ fi
 
 log "Mise à jour des sources"
 git pull  > $SORTIE_LOG
+errorHandler "Ce push va provoquer une erreur de merge: merci de merger d'abord votre branche"
 
 CURRENT_REVISION="$( git log --pretty=%H -1)"
 log "Revision à tester : $CURRENT_REVISION"
