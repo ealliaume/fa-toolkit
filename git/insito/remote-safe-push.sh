@@ -89,8 +89,8 @@ fi
 git push -n  $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
 errorHandler "Ce push va provoquer une erreur de merge: merci de merger d'abord votre branche"
 
-git push remote-run +HEAD:$CURRENT_BRANCH > $SORTIE_LOG
-errorHandler "Erreur lors de la mise à jour des sources depuis \"origin\""
+git push remote-run +$CURRENT_BRANCH:$CURRENT_BRANCH > $SORTIE_LOG
+errorHandler "Erreur lors de la mise à jour des sources vers \"remote-run\""
 
 
 #DEBUT DE LA VALIDATION
