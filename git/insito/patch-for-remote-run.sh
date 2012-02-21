@@ -33,6 +33,10 @@ if [ -f bashrc ]; then
 	mv bashrc .bashrc
 fi
 
+if [ -f properties-service.xml ]; then
+	mv properties-service.xml /home/service/jboss-4.0.5.GA/server/insito/deploy
+fi
+
 if [ ! -d ~/.ssh ]; then
 echo "Création d'un répertoire ~/.ssh"
 mkdir ~/.ssh
