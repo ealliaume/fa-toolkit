@@ -72,7 +72,7 @@ if [ 0 -ne `git status --porcelain | grep -v '??' | wc -l` ]; then
 fi
 
 log "Mise à jour des sources"
-git pull origin $CURRENT_BRANCH
+git pull $REMOTE_ALIAS $CURRENT_BRANCH
 if [ $? -ne 0 ]; then
     if [ -n "$HAS_STASH" ]; then
 	  git stash pop > $SORTIE_LOG
@@ -130,7 +130,7 @@ log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $REMOTE_BRANCH"
 git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
 errorHandler "Problème lors du push"
 
-git fetch > $SORTIE_LOG
+git fetch $REMOTE_ALIAS > $SORTIE_LOG
 
 echo
 log "Terminé avec succès :)"
