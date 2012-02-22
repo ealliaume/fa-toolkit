@@ -72,8 +72,13 @@ if [ 0 -ne `git status --porcelain | grep -v '??' | wc -l` ]; then
 fi
 
 log "Mise à jour des sources"
-git pull  > $SORTIE_LOG
-errorHandler "Ce push va provoquer une erreur de merge: merci de merger d'abord votre branche"
+git pull origin $CURRENT_BRANCH
+if [ $? -ne 0 ]; then
+    if [ -n "$HAS_STASH" ]; then
+	  git stash pop > $SORTIE_LOG
+    fi
+    logError "Ce push va provoquer une erreur de merge: merci de merger d'abord votre branche"
+fi
 
 CURRENT_REVISION="$( git log --pretty=%H -1)"
 log "Revision à tester : $CURRENT_REVISION"
@@ -86,7 +91,7 @@ fi
 
 ####### Teste si le push au final ne générera pas une erreur
 ####### Avant de lancer la batterie de test
-git push -n  $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
+git push -n  $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH > $SORTIE_LOG
 errorHandler "Ce push va provoquer une erreur de merge: merci de merger d'abord votre branche"
 
 git push remote-run +$CURRENT_BRANCH:$CURRENT_BRANCH > $SORTIE_LOG
@@ -95,8 +100,9 @@ errorHandler "Erreur lors de la mise à jour des sources vers \"remote-run\""
 
 #DEBUT DE LA VALIDATION
 log "Lancement de la compilation, TU et TI"
-remoteCommand "git clean -df; git checkout -f ${CURRENT_BRANCH}"
-remoteCommand "mvn clean install"
+remoteCommand "git clean -df; git checkout -f ${CURRENT_BRANCH}" > $SORTIE_LOG
+remoteCommand "mvn clean install" > $SORTIE_LOG
+
 errorHandler "Erreur lors de la compilation, TU ou TI"
 
 log "Lancement du JBOSS"
@@ -123,6 +129,8 @@ remoteCommand "sh ~/service.sh stop" > $SORTIE_LOG 2>&1
 log "Mise à jour du repository $REMOTE_ALIAS: $REMOTE_REPO $REMOTE_BRANCH"
 git push $GIT_DRY_RUN $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH
 errorHandler "Problème lors du push"
+
+git fetch > $SORTIE_LOG
 
 echo
 log "Terminé avec succès :)"
