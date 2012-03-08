@@ -34,11 +34,17 @@ function getRidOf {
 # @param $1 linked file name
 # @param $2 source directory
 # @param $3 target directory
+# @param $4 target file name (optional)
 function link2conf {
 	checkDirExist $3
 	getRidOf "$3/$1"
-	echo "Linking conf file \"$2/$1\" -> \"$3/$1\""
-	ln -s "$2/$1" "$3/$1"
+	if [ $4 ]; then
+		targetFileName=$4
+	else
+		targetFileName=$1
+	fi
+	echo "Linking conf file \"$2/$1\" -> \"$3/$targetFileName\""
+	ln -s "$2/$1" "$3/$targetFileName"
 }
 
 # @param $1 linked file name
@@ -119,4 +125,5 @@ link2checkedconf quartz.properties $CONF_HOME $JBOSS_HOME/server/insito/conf
 link2checkedconf run.conf $CONF_HOME $JBOSS_HOME/bin
 
 # finactive-ear.ear
-link2conf finactive-ear.ear $INSITO_HOME/ear/ear/target $JBOSS_HOME/server/insito/deploy
+link2conf finactive-ear.ear $INSITO_HOME/ear/ear/target $JBOSS_HOME/server/insito/deploy finactive-ear.old.ear
+link2conf finactive-ear.ear $INSITO_HOME/ear/target $JBOSS_HOME/server/insito/deploy
