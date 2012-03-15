@@ -101,7 +101,7 @@ errorHandler "Erreur lors de la mise à jour des sources vers \"remote-run\""
 
 #DEBUT DE LA VALIDATION
 log "Lancement de la compilation, TU et TI"
-remoteCommand "git clean -df; git checkout -f ${CURRENT_BRANCH}" > $SORTIE_LOG
+remoteCommand "git checkout -f ${CURRENT_BRANCH}; git clean -df" > $SORTIE_LOG
 remoteCommand "mvn clean install" > $SORTIE_LOG
 
 errorHandler "Erreur lors de la compilation, TU ou TI"
