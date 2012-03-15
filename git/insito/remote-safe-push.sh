@@ -94,6 +94,7 @@ fi
 git push -n  $REMOTE_REPO $CURRENT_REVISION:$REMOTE_BRANCH > $SORTIE_LOG
 errorHandler "Ce push va provoquer une erreur de merge: merci de merger d'abord votre branche"
 
+## TODO gérer le cas où le remote-run n'existe pas ##
 git push remote-run +$CURRENT_BRANCH:$CURRENT_BRANCH > $SORTIE_LOG
 errorHandler "Erreur lors de la mise à jour des sources vers \"remote-run\""
 
@@ -108,6 +109,8 @@ errorHandler "Erreur lors de la compilation, TU ou TI"
 log "Lancement du JBOSS"
 remoteCommand "sh ~/service.sh stop"  > $SORTIE_LOG 2>&1
 sleep 5
+# Cette étape n'est nécessaire que le temps des différences d'arborescence entre les branches. 
+ssh service@$PERSONAL_VM '/home/service/update-ear-link.sh' > $SORTIE_LOG
 ssh service@$PERSONAL_VM 'rm -rf /home/service/jboss-4.0.5.GA/server/insito/tmp/*;rm -rf /home/service/jboss-4.0.5.GA/server/insito/work/*;' > $SORTIE_LOG
 ssh service@$PERSONAL_VM '/home/service/service.sh start' > $SORTIE_LOG &
 errorHandler "Erreur lors du démarrage de JBOSS"
