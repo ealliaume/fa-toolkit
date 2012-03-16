@@ -109,8 +109,7 @@ errorHandler "Erreur lors de la compilation, TU ou TI"
 log "Lancement du JBOSS"
 remoteCommand "sh ~/service.sh stop"  > $SORTIE_LOG 2>&1
 sleep 5
-# Cette étape n'est nécessaire que le temps des différences d'arborescence entre les branches. 
-ssh service@$PERSONAL_VM '/home/service/update-ear-link.sh' > $SORTIE_LOG
+
 ssh service@$PERSONAL_VM 'rm -rf /home/service/jboss-4.0.5.GA/server/insito/tmp/*;rm -rf /home/service/jboss-4.0.5.GA/server/insito/work/*;' > $SORTIE_LOG
 ssh service@$PERSONAL_VM '/home/service/service.sh start' > $SORTIE_LOG &
 errorHandler "Erreur lors du démarrage de JBOSS"
