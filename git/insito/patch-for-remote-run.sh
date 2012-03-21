@@ -55,6 +55,9 @@ else
 	echo "Vous avez déjà votre repo \"remote-run\""
 fi
 
+# Ajout de la variable specifiant le repertoire de configuration relatif a chaque developpeur
+echo export REMOTE_CONF_DIR=/home/service/remote-run/data/conf/developpement/${HOSTNAME} >> /home/service/.bashrc
+
 
 echo "Préparation de la partie JBOSS"
 cd ~/jboss-4.0.5.GA/server/insito/

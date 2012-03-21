@@ -109,7 +109,8 @@ errorHandler "Erreur lors de la compilation, TU ou TI"
 log "Lancement du JBOSS"
 remoteCommand "sh ~/service.sh stop"  > $SORTIE_LOG 2>&1
 sleep 5
-
+ssh service@$PERSONAL_VM 'rm /home/service/jboss-4.0.5.GA/server/insito/deploy/insito-ds.xml'
+ssh service@$PERSONAL_VM 'cd /home/service/jboss-4.0.5.GA/server/insito/deploy/;ln -s $REMOTE_CONF_DIR/insito-ds.xml insito-ds.xml;'
 ssh service@$PERSONAL_VM 'rm -rf /home/service/jboss-4.0.5.GA/server/insito/tmp/*;rm -rf /home/service/jboss-4.0.5.GA/server/insito/work/*;' > $SORTIE_LOG
 ssh service@$PERSONAL_VM '/home/service/service.sh start' > $SORTIE_LOG &
 errorHandler "Erreur lors du démarrage de JBOSS"
@@ -124,6 +125,31 @@ if [ $? -ne 0 ]; then
     fi
     remoteCommand "sh ~/service.sh stop" > $SORTIE_LOG 2>&1
     logError "Erreur lors des tests fonctionnels"
+fi
+
+remoteCommand "sh ~/service.sh stop"  > $SORTIE_LOG 2>&1
+sleep 10
+
+log "Lancement du JBOSS en mode ALLIANCE"
+
+ssh service@$PERSONAL_VM 'rm -rf /home/service/jboss-4.0.5.GA/server/insito/tmp/*;rm -rf /home/service/jboss-4.0.5.GA/server/insito/work/*;' > $SORTIE_LOG
+log "Surcharge de la configuration de la base de données"
+####### On fait pointer le insito-ds.xml vers celui d'Alliance
+ssh service@$PERSONAL_VM 'rm /home/service/jboss-4.0.5.GA/server/insito/deploy/insito-ds.xml'
+ssh service@$PERSONAL_VM 'cd /home/service/jboss-4.0.5.GA/server/insito/deploy/;ln -s $REMOTE_CONF_DIR/alliance-ds.xml insito-ds.xml;'
+ssh service@$PERSONAL_VM 'export EXTRA_INSITO_OPTS="-DoverrideDev-gestion-client.plateforme.nom=ALLIANCE";/home/service/service.sh start' > $SORTIE_LOG &
+errorHandler "Erreur lors du démarrage de JBOSS"
+
+sleep 30
+log "Lancement des TFs - Alliance"
+
+remoteCommand "mvn clean test -Dtest=TestsFonctionnelsAllianceNouveau -PoldTestsFonctionnels" > $SORTIE_LOG
+if [ $? -ne 0 ]; then
+    if [ -z "$VERBOSE" ]; then
+        tail -50 $SORTIE_LOG     
+    fi
+    remoteCommand "sh ~/service.sh stop" > $SORTIE_LOG 2>&1
+    logError "Erreur lors des tests fonctionnels"-
 fi
 
 remoteCommand "sh ~/service.sh stop" > $SORTIE_LOG 2>&1
